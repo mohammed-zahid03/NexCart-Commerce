@@ -1,55 +1,100 @@
-import { FaExclamationTriangle } from "react-icons/fa";
-import ProductCard from "../shared/ProductCard";
-import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
-import { fetchCategories } from "../../store/actions";
-import Filter from "./Filter";
-import useProductFilter from "../../hooks/useProductFilter";
-import Loader from "../shared/Loader";
-import Paginations from "../shared/Paginations";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+
+import Breadcrumb from "./components/Breadcrumb";
+import ActiveFilters from "./components/ActiveFilters";
+import SortDropdown from "./components/SortDropdown";
+import FilterSidebar from "./filters/FilterSidebar";
+import ProductGrid from "./cards/ProductGrid";
+import Pagination from "./components/Pagination";
 
 const Products = () => {
-    const { isLoading, errorMessage } = useSelector(
-        (state) => state.errors
-    );
-    const {products, categories, pagination} = useSelector(
-        (state) => state.products
-    )
-    const dispatch = useDispatch();
-    useProductFilter();
+  const [currentPage, setCurrentPage] = useState(0);
 
-    useEffect(() => {
-        dispatch(fetchCategories());
-    }, [dispatch]);
+  return (
+    <main className="bg-[#f8fafc]">
+      <div className="mx-auto max-w-[1600px] px-8">
 
-    return (
-        <div className="lg:px-14 sm:px-8 px-4 py-14 2xl:w-[90%] 2xl:mx-auto">
-            <Filter categories={categories ? categories : []}/>
-            {isLoading ? (
-                <Loader />
-            ) : errorMessage ? (
-                <div className="flex justify-center items-center h-[200px]">
-                    <FaExclamationTriangle className="text-slate-800 text-3xl mr-2"/>
-                    <span className="text-slate-800 text-lg font-medium">
-                        {errorMessage}
-                    </span>
-                </div>
-            ) : (
-                <div className="min-h-[700px]">
-                    <div className="pb-6 pt-14 grid 2xl:grid-cols-4 lg:grid-cols-3 sm:grid-cols-2 gap-y-6 gap-x-6">
-                       {products && 
-                        products.map((item, i) => <ProductCard key={i} {...item} />
-                        )}
-                    </div>
-                    <div className="flex justify-center pt-10">
-                        <Paginations 
-                            numberOfPage = {pagination?.totalPages}
-                            totalProducts = {pagination?.totalElements}/>
-                    </div>
-                </div>
-            )}
+        {/* Top Row: Breadcrumb + Product Toolbar */}
+        <div className="mt-2 mb-4 grid grid-cols-[280px_1fr] items-center gap-10">
+
+          {/* Breadcrumb */}
+          <div className="py-3">
+            <Breadcrumb />
+          </div>
+
+          {/* Product Toolbar */}
+          <div className="flex min-w-0 items-center justify-between gap-4">
+
+            {/* Count + Active Filters */}
+            <div className="flex min-w-0 items-center gap-5">
+              <ProductCount />
+
+              <ActiveFilters />
+            </div>
+
+            {/* Sort */}
+            <SortDropdown />
+
+          </div>
         </div>
-    )
-}
+
+        {/* Sidebar + Products */}
+        <div className="grid grid-cols-[280px_1fr] gap-10">
+
+          {/* LEFT SIDEBAR */}
+          <aside className="w-[280px]">
+            <FilterSidebar />
+          </aside>
+
+          {/* RIGHT PRODUCTS */}
+          <section className="min-w-0">
+
+            <ProductGrid page={currentPage} />
+
+            <Pagination
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+            />
+
+          </section>
+        </div>
+
+      </div>
+    </main>
+  );
+};
+
+const ProductCount = () => {
+  const { pagination } = useSelector(
+    (state) => state.products
+  );
+
+  const pageNumber = pagination?.pageNumber ?? 0;
+  const pageSize = pagination?.pageSize ?? 20;
+  const totalElements = pagination?.totalElements ?? 0;
+
+  if (totalElements === 0) {
+    return (
+      <p className="shrink-0 whitespace-nowrap text-sm text-gray-500">
+        No products
+      </p>
+    );
+  }
+
+  const start = pageNumber * pageSize + 1;
+
+  const end = Math.min(
+    start + pageSize - 1,
+    totalElements
+  );
+
+  return (
+    <p className="shrink-0 whitespace-nowrap text-sm text-gray-500">
+      Showing {start}–{end} of{" "}
+      {totalElements.toLocaleString("en-IN")} products
+    </p>
+  );
+};
 
 export default Products;

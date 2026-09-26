@@ -1,4 +1,15 @@
-import { FaBoxOpen, FaHome, FaShoppingCart, FaStore, FaThList } from "react-icons/fa";
+import {
+  FaBoxOpen,
+  FaHome,
+  FaShoppingCart,
+  FaStore,
+  FaThList,
+  FaUndoAlt,
+  FaEnvelope,
+  FaClipboardList,
+  FaUsers,
+  FaStar
+} from "react-icons/fa";
 import { bannerImageOne, bannerImageThree, bannerImageTwo } from "./constant";
 
 export const bannerLists = [
@@ -44,23 +55,59 @@ export const adminNavigation = [
     name: "Categories", 
     href: "/admin/categories", 
     icon: FaThList
-  }, {
+  }, 
+   {
     name: "Sellers", 
     href: "/admin/sellers", 
     icon: FaStore 
-  }
+  }, 
+  {
+  name: "Customers",
+  href: "/admin/customers",
+  icon: FaUsers
+},
+{
+  name: "Reviews",
+  href: "/admin/reviews",
+  icon: FaStar
+},
+  {
+    name: "Seller Applications",
+    href: "/admin/seller-applications",
+    icon: FaClipboardList
+},
+  {
+    name: "Returns",
+    href: "/admin/returns",
+    icon: FaUndoAlt
+   }, {
+    name: "Contact Messages",
+    href: "/admin/contact-messages",
+    icon: FaEnvelope
+  },
+  {
+  name: "Audit Logs",
+  href: "/admin/audit-logs",
+  icon: FaClipboardList
+}
 ];
 
 
 export const sellerNavigation = [
   {
-    name: "Orders", 
-    href: "/admin/orders", 
-    icon: FaShoppingCart,
-    current: true 
-  }, {
-    name: "Products", 
-    href: "/admin/products", 
+    name: "Dashboard",
+    href: "/seller",
+    icon: FaHome,
+    current: true
+  },
+  {
+    name: "Orders",
+    href: "/seller/orders",
+    icon: FaShoppingCart
+  },
+  {
+    name: "Products",
+    href: "/seller/products",
     icon: FaBoxOpen
   }
 ];

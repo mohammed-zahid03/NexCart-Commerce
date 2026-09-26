@@ -1,5 +1,6 @@
 const initialState = {
     adminOrder: null,
+    adminReturns: null,
     pagination: {},
 };
 
@@ -18,6 +19,13 @@ export const orderReducer = (state = initialState, action) => {
                     lastPage: action.lastPage,
                 },
             };
+
+        case "GET_ADMIN_RETURNS":
+            return {
+                ...state,
+                adminReturns: action.payload,
+            };
+
         default:
             return state;
     }

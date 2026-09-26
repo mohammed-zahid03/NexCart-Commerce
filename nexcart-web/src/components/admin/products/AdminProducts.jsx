@@ -14,6 +14,7 @@ import toast from 'react-hot-toast';
 import ImageUploadForm from './ImageUploadForm';
 import ProductViewModal from '../../shared/ProductViewModal';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import api from '../../../api/api';
 
 const AdminProducts = () => {
   // const products = [{ "productId": 52, "productName": "iPad Pro", "image": "http://localhost:8080/images/7a7b38c4-2342-4d10-89e9-2c5b3c4fdb44.png", "description": "High-performance Tablet with a 4K display and powerful camera", "quantity": 30, "price": 1800.0, "discount": 43.0, "specialPrice": 1026.0 }, { "productId": 2, "productName": "iPhone 16 Pro Max", "image": "http://localhost:8080/images/22185fd1-024a-4708-9a10-832b8a50bfde.png", "description": "High-performance phone with a 4K display and powerful camera", "quantity": 19, "price": 1400.0, "discount": 23.0, "specialPrice": 1078.0 }];
@@ -35,6 +36,7 @@ const AdminProducts = () => {
   const [openImageUploadModal, setOpenImageUploadModal] = useState(false);
 
   const [loader, setLoader] = useState(false);
+  const [featuredProducts, setFeaturedProducts] = useState({});
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -46,7 +48,7 @@ const AdminProducts = () => {
 
   useDashboardProductFilter();
 
-  const tableRecords = products?.map((item) => {
+const tableRecords = products?.map((item) => {
   return {
     id: item.productId,
     productName: item.productName,
@@ -55,8 +57,12 @@ const AdminProducts = () => {
     image: item.image,
     price: item.price,
     quantity: item.quantity,
-    specialPrice: item.specialPrice,
-  }
+   specialPrice: item.specialPrice,
+brand: item.brand,
+featured:
+      featuredProducts[item.productId] ?? item.featured ?? false,
+      status: item.status,
+  };
 });
 
 const handleEdit = (product) => {
@@ -77,6 +83,60 @@ const handleImageUpload = (product) => {
 const handleProductView = (product) => {
   setSelectedProduct(product);
   setOpenProductViewModal(true);
+};
+
+const handleFeaturedToggle = async (product) => {
+  const newFeaturedStatus = !product.featured;
+
+  try {
+    await api.put(
+      `/admin/products/${product.id}/featured?featured=${newFeaturedStatus}`
+    );
+
+    setFeaturedProducts((prev) => ({
+      ...prev,
+      [product.id]: newFeaturedStatus,
+    }));
+
+    toast.success(
+      newFeaturedStatus
+        ? "Product marked as featured"
+        : "Product removed from featured"
+    );
+  } catch (error) {
+    console.error("Failed to update featured status:", error);
+    toast.error("Failed to update featured status");
+  }
+};
+
+const handleProductStatus = async (product, status) => {
+  try {
+    await api.put(
+      `/admin/products/${product.id}/status`,
+      null,
+      {
+        params: {
+          status,
+        },
+      }
+    );
+
+    toast.success(
+      status === "APPROVED"
+        ? "Product approved successfully!"
+        : "Product rejected successfully!"
+    );
+
+    window.location.reload();
+
+  } catch (error) {
+    console.error("Failed to update product status:", error);
+
+    toast.error(
+      error?.response?.data?.message ||
+      "Failed to update product status."
+    );
+  }
 };
 
 
@@ -126,10 +186,14 @@ const onDeleteHandler = () => {
             className='w-full'
             rows={tableRecords}
             columns={adminProductTableColumn(
-              handleEdit,
-              handleDelete,
-              handleImageUpload,
-              handleProductView)}
+  handleEdit,
+  handleDelete,
+  handleImageUpload,
+  handleProductView,
+  handleFeaturedToggle,
+  handleProductStatus,
+  isAdmin
+)}
             paginationMode='server'
             rowCount={pagination?.totalElements || 0}
             initialState={{

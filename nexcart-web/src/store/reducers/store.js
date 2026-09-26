@@ -7,6 +7,8 @@ import { paymentMethodReducer } from "./paymentMethodReducer";
 import { adminReducer } from "./adminReducer";
 import { orderReducer } from "./orderReducer";
 import { sellerReducer } from "./sellerReducer";
+import { wishlistReducer } from "./wishlistReducer";
+import { reviewReducer } from "./reviewReducer";
 
 const user = localStorage.getItem("auth")
     ? JSON.parse(localStorage.getItem("auth"))
@@ -16,6 +18,7 @@ const cartItems = localStorage.getItem("cartItems")
     ? JSON.parse(localStorage.getItem("cartItems"))
     : [];
 
+
 const selectUserCheckoutAddress = localStorage.getItem("CHECKOUT_ADDRESS")
     ? JSON.parse(localStorage.getItem("CHECKOUT_ADDRESS"))
     : [];
@@ -23,6 +26,7 @@ const selectUserCheckoutAddress = localStorage.getItem("CHECKOUT_ADDRESS")
 const initialState = {
     auth: { user: user, selectUserCheckoutAddress },
     carts: { cart: cartItems },
+
 };
 
 export const store = configureStore({
@@ -30,6 +34,9 @@ export const store = configureStore({
         products: productReducer,
         errors: errorReducer,
         carts: cartReducer,
+        wishlist: wishlistReducer,
+        reviews: reviewReducer,
+
         auth: authReducer,
         payment: paymentMethodReducer,
         admin: adminReducer,

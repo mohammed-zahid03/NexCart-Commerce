@@ -1,30 +1,43 @@
-
-const btnStyles = "border-[1.2px] border-slate-800 px-3 py-1 rounded-sm";
 const SetQuantity = ({
     quantity,
     cardCounter,
     handeQtyIncrease,
     handleQtyDecrease,
 }) => {
-   return (
-   <div className="flex gap-8 items-center">
-        {cardCounter ? null : <div className="font-semibold">QUANTITY</div>}
-        <div className="flex md:flex-row flex-col gap-4 items-center lg:text-[22px] text-sm">
-            <button
-                disabled={quantity<=1}
-                className={btnStyles}
-                onClick={handleQtyDecrease}>
-                -
-            </button>
-                <div className="text-red-500">{quantity}</div>
-            <button
-                className={btnStyles}
-                onClick={handeQtyIncrease}>
-                +
-            </button>
+    return (
+        <div className="flex items-center gap-3">
+            {!cardCounter && (
+                <span className="text-sm font-semibold text-gray-900">
+                    Quantity
+                </span>
+            )}
+
+            <div className="flex h-9 items-center overflow-hidden rounded-lg border border-gray-200 bg-white">
+                <button
+                    type="button"
+                    disabled={quantity <= 1}
+                    onClick={handleQtyDecrease}
+                    className="flex h-full w-9 items-center justify-center text-gray-500 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-300"
+                    aria-label="Decrease quantity"
+                >
+                    −
+                </button>
+
+                <span className="flex h-full w-9 items-center justify-center border-x border-gray-200 text-[13px] font-semibold text-gray-900">
+                    {quantity}
+                </span>
+
+                <button
+                    type="button"
+                    onClick={handeQtyIncrease}
+                    className="flex h-full w-9 items-center justify-center text-gray-500 transition hover:bg-gray-50"
+                    aria-label="Increase quantity"
+                >
+                    +
+                </button>
+            </div>
         </div>
-    </div>
-   );
+    );
 };
 
 export default SetQuantity;

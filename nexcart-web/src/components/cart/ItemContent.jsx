@@ -1,11 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HiOutlineTrash } from "react-icons/hi";
-import SetQuantity from "./SetQuantity";
+import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { decreaseCartQuantity, increaseCartQuantity, removeFromCart } from "../../store/actions";
+import SetQuantity from "./SetQuantity";
+import {
+    decreaseCartQuantity,
+    increaseCartQuantity,
+    removeFromCart,
+} from "../../store/actions";
 import toast from "react-hot-toast";
 import { formatPrice } from "../../utils/formatPrice";
-import truncateText from "../../utils/truncateText";
+import { getImageUrl } from "../../utils/imageUrl";
 
 const ItemContent = ({
     productId,
@@ -16,100 +21,164 @@ const ItemContent = ({
     price,
     discount,
     specialPrice,
-    cartId,
-  }) => {
+}) => {
     const [currentQuantity, setCurrentQuantity] = useState(quantity);
     const dispatch = useDispatch();
 
-    const handleQtyIncrease = (cartItems) => {
-        dispatch(increaseCartQuantity(
-            cartItems,
-            toast,
-            currentQuantity,
-            setCurrentQuantity
-        ));
+    useEffect(() => {
+        setCurrentQuantity(quantity);
+    }, [quantity]);
+
+    const handleQtyIncrease = () => {
+        dispatch(
+            increaseCartQuantity(
+                {
+                    image,
+                    productName,
+                    description,
+                    specialPrice,
+                    price,
+                    productId,
+                    quantity: currentQuantity,
+                },
+                toast,
+                currentQuantity,
+                setCurrentQuantity
+            )
+        );
     };
 
-    const handleQtyDecrease = (cartItems) => {
-        if (currentQuantity > 1) {
-            const newQuantity = currentQuantity - 1;
-            setCurrentQuantity(newQuantity);
-            dispatch(decreaseCartQuantity(cartItems, newQuantity));
-        }
+    const handleQtyDecrease = () => {
+        if (currentQuantity <= 1) return;
+
+        const newQuantity = currentQuantity - 1;
+
+        setCurrentQuantity(newQuantity);
+
+        dispatch(
+            decreaseCartQuantity(
+                {
+                    image,
+                    productName,
+                    description,
+                    specialPrice,
+                    price,
+                    productId,
+                    quantity: currentQuantity,
+                },
+                newQuantity
+            )
+        );
     };
 
-    const removeItemFromCart = (cartItems) => {
-        dispatch(removeFromCart(cartItems, toast));
+    const removeItemFromCart = () => {
+        dispatch(
+            removeFromCart(
+                {
+                    image,
+                    productName,
+                    description,
+                    specialPrice,
+                    price,
+                    productId,
+                    quantity: currentQuantity,
+                },
+                toast
+            )
+        );
     };
-    
+
+    const originalPrice = Number(price || 0);
+    const salePrice = Number(specialPrice || 0);
+    const savings = Math.max(originalPrice - salePrice, 0);
+    const itemTotal = salePrice * currentQuantity;
+
     return (
-        <div className="grid md:grid-cols-5 grid-cols-4 md:text-md text-sm gap-4   items-center  border border-slate-200  rounded-md  lg:px-4  py-4 p-2">
-            <div className="md:col-span-2 justify-self-start flex  flex-col gap-2 ">
-                <div className="flex md:flex-row flex-col lg:gap-4 sm:gap-3 gap-0 items-start ">
-                   <h3 className="lg:text-[17px] text-sm font-semibold text-slate-600">
-                    {truncateText(productName)}
-                   </h3>
-                </div>
+        <article className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
+            <div className="flex gap-4 sm:gap-5">
 
-                <div className="md:w-36 sm:w-24 w-12">
-                    <img 
-                        src={`${import.meta.env.VITE_BACK_END_URL}/images/${image}`}
+                {/* Product image */}
+                <Link
+                    to={`/product/${productId}`}
+                    className="h-28 w-28 shrink-0 overflow-hidden rounded-xl bg-[#f7f7f5] sm:h-32 sm:w-32"
+                >
+                    <img
+                        src={getImageUrl(image)}
                         alt={productName}
-                        className="md:h-36 sm:h-24 h-12 w-full object-cover rounded-md"/>
-                
+                        className="h-full w-full object-contain p-2 transition duration-300 hover:scale-[1.03]"
+                    />
+                </Link>
 
-                <div className="flex items-start gap-5 mt-3">
-                    <button
-                        onClick={() => removeItemFromCart({
-                            image,
-                            productName,
-                            description,
-                            specialPrice,
-                            price,
-                            productId,
-                            quantity,
-                        })}
-                        className="flex items-center font-semibold space-x-2 px-4 py-1 text-xs border border-rose-600 text-rose-600 rounded-md hover:bg-red-50 transition-colors duration-200">
-                        <HiOutlineTrash size={16} className="text-rose-600"/>
-                        Remove
-                    </button>
+                {/* Product information */}
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <Link
+                                to={`/product/${productId}`}
+                                className="block truncate text-[15px] font-semibold text-gray-950 transition hover:text-gray-600 sm:text-[17px]"
+                            >
+                                {productName}
+                            </Link>
+
+                            <p className="mt-1 line-clamp-1 text-[12px] text-gray-500">
+                                {description}
+                            </p>
+                        </div>
+
+                        {discount > 0 && (
+                            <span className="shrink-0 rounded-md bg-green-50 px-2 py-1 text-[10px] font-bold text-green-600">
+                                {Math.round(discount)}% OFF
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Price */}
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <span className="text-[17px] font-semibold text-gray-950">
+                            {formatPrice(salePrice)}
+                        </span>
+
+                        {originalPrice > salePrice && (
+                            <>
+                                <span className="text-[12px] text-gray-400 line-through">
+                                    {formatPrice(originalPrice)}
+                                </span>
+
+                                <span className="text-[12px] font-medium text-green-600">
+                                    Save {formatPrice(savings)}
+                                </span>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Bottom controls */}
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <SetQuantity
+                            quantity={currentQuantity}
+                            cardCounter={true}
+                            handeQtyIncrease={handleQtyIncrease}
+                            handleQtyDecrease={handleQtyDecrease}
+                        />
+
+                        <div className="flex items-center justify-between gap-10 sm:justify-end">
+                            <button
+                                type="button"
+                                onClick={removeItemFromCart}
+                                className="inline-flex items-center gap-1.5 text-[12px] font-medium text-gray-400 transition hover:text-red-500"
+                            >
+                                <HiOutlineTrash size={15} />
+                                Remove
+                            </button>
+
+                            <span className="text-[16px] font-semibold text-gray-950">
+                                {formatPrice(itemTotal)}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <div className="justify-self-center lg:text-[17px] text-sm text-slate-600 font-semibold">
-                {formatPrice(Number(specialPrice))}
-            </div>
-
-            <div className="justify-self-center">
-                <SetQuantity 
-                    quantity={currentQuantity}
-                    cardCounter={true}
-                    handeQtyIncrease={() => handleQtyIncrease({
-                        image,
-                        productName,
-                        description,
-                        specialPrice,
-                        price,
-                        productId,
-                        quantity,
-                    })}
-                    handleQtyDecrease={() => {handleQtyDecrease({
-                        image,
-                        productName,
-                        description,
-                        specialPrice,
-                        price,
-                        productId,
-                        quantity,
-                    })}}/>
-            </div>
-
-            <div className="justify-self-center lg:text-[17px] text-sm text-slate-600 font-semibold">
-                {formatPrice(Number(currentQuantity) * Number(specialPrice))}
-            </div>
-        </div>
-    )
+        </article>
+    );
 };
 
 export default ItemContent;

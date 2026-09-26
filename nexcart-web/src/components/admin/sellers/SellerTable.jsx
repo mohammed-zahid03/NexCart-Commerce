@@ -3,20 +3,26 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
 import { sellerTableColumns } from "../../helper/tableColumn";
 
-const SellerTable = ({ sellers, pagination }) => {
+const SellerTable = ({
+  sellers,
+  pagination,
+  handleDelete,
+  handleSellerStatus,
+}) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const pathname = useLocation().pathname;
   const params = new URLSearchParams(searchParams);
   const [currentPage, setCurrentPage] = useState(pagination?.pageNumber || 1);
 
-  const tableRecords = sellers?.map((item) => {
-    return {
-      id: item.userId,
-      username: item.username,
-      email: item.email,
-    };
-  });
+ const tableRecords = sellers?.map((item) => {
+  return {
+    id: item.userId,
+    username: item.username,
+    email: item.email,
+    sellerActive: item.sellerActive,
+  };
+});
 
   const handlePaginationChange = (paginationModel) => {
     const page = paginationModel.page + 1;
@@ -34,7 +40,10 @@ const SellerTable = ({ sellers, pagination }) => {
           rows={tableRecords}
           paginationMode="server"
           rowCount={pagination?.totalElements || 0}
-          columns={sellerTableColumns}
+          columns={sellerTableColumns(
+  handleDelete,
+  handleSellerStatus
+)}
           initialState={{
             pagination: {
               paginationModel: {

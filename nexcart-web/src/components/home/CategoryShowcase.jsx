@@ -2,6 +2,7 @@ import electronics from "../../assets/categories/electronics.jpg";
 import fashion from "../../assets/categories/fashion.jpg";
 import books from "../../assets/categories/books.jpg";
 import sports from "../../assets/categories/sports.jpg";
+import { Link } from "react-router-dom";
 
 const categories = [
   {
@@ -35,11 +36,12 @@ const CategoryShowcase = () => {
       </div>
 
       <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6">
-        {categories.map((category) => (
-          <div
-            key={category.name}
-            className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 group cursor-pointer"
-          >
+       {categories.map((category) => (
+  <Link
+    key={category.name}
+    to={`/products?category=${encodeURIComponent(category.name)}`}
+    className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 group cursor-pointer"
+  >
             <img
               src={category.image}
               alt={category.name}
@@ -51,8 +53,8 @@ const CategoryShowcase = () => {
                 {category.name}
               </h3>
             </div>
-          </div>
-        ))}
+         </Link>
+))}
       </div>
     </section>
   );

@@ -48,28 +48,43 @@ export const fetchCategories = () => async (dispatch) => {
 };
 
 
-export const addToCart = (data, qty = 1, toast) => 
+export const addToCart = (data, qty = 1, toast) =>
     (dispatch, getState) => {
-        // Find the product
-        const { products } = getState().products;
-        const getProduct = products.find(
+
+        const cartItems = getState().carts.cart;
+
+        // Check if product is already in cart
+        const alreadyInCart = cartItems.some(
             (item) => item.productId === data.productId
         );
 
-        // Check for stocks
-        const isQuantityExist = getProduct.quantity >= qty;
+        if (alreadyInCart) {
+           toast(`${data?.productName} is already in the cart`);
+            return;
+        }
 
-        // If in stock -> add
-        if (isQuantityExist) {
-            dispatch({ type: "ADD_CART", payload: {...data, quantity: qty}});
+        // Check stock
+        const availableQuantity = Number(data?.quantity ?? 0);
+
+        if (availableQuantity >= qty) {
+            dispatch({
+                type: "ADD_CART",
+                payload: {
+                    ...data,
+                    quantity: qty,
+                },
+            });
+
             toast.success(`${data?.productName} added to the cart`);
-            localStorage.setItem("cartItems", JSON.stringify(getState().carts.cart));
+
+            localStorage.setItem(
+                "cartItems",
+                JSON.stringify(getState().carts.cart)
+            );
         } else {
-            // error
             toast.error("Out of stock");
         }
-};
-
+    };
 
 export const increaseCartQuantity = 
     (data, toast, currentQuantity, setCurrentQuantity) =>
@@ -89,7 +104,7 @@ export const increaseCartQuantity =
 
             dispatch({
                 type: "ADD_CART",
-                payload: {...data, quantity: newQuantity + 1 },
+                payload: {...data, quantity: newQuantity },
             });
             localStorage.setItem("cartItems", JSON.stringify(getState().carts.cart));
         } else {
@@ -118,7 +133,7 @@ export const removeFromCart =  (data, toast) => (dispatch, getState) => {
 
 
 export const authenticateSignInUser 
-    = (sendData, toast, reset, navigate, setLoader) => async (dispatch) => {
+    = (sendData, toast, reset, navigate, setLoader, redirectTo = "/") => async (dispatch) => {
         try {
             setLoader(true);
             const { data } = await api.post("/auth/signin", sendData);
@@ -126,7 +141,7 @@ export const authenticateSignInUser
             localStorage.setItem("auth", JSON.stringify(data));
             reset();
             toast.success("Login Success");
-            navigate("/");
+            navigate(redirectTo);
         } catch (error) {
             console.log(error);
             toast.error(error?.response?.data?.message || "Internal Server Error");
@@ -152,6 +167,121 @@ export const registerNewUser
         }
 };
 
+export const submitSellerApplication =
+    (sendData, toast, navigate, setLoader) => async () => {
+        try {
+            setLoader(true);
+
+            const { data } = await api.post(
+                "/seller-applications",
+                sendData
+            );
+
+            toast.success(
+                data?.message || "Seller application submitted successfully"
+            );
+
+            navigate("/seller-application/status");
+
+            return data;
+        } catch (error) {
+            console.log(error);
+
+            toast.error(
+                error?.response?.data?.message ||
+                "Failed to submit seller application"
+            );
+
+            return null;
+        } finally {
+            setLoader(false);
+        }
+    };
+
+
+export const getMySellerApplication =
+    () => async () => {
+        try {
+            const { data } = await api.get(
+                "/seller-applications/me"
+            );
+
+            return data;
+        } catch (error) {
+            console.log(error);
+
+            throw error;
+        }
+    };
+
+    export const getAllSellerApplications =
+  () => async () => {
+    try {
+      const { data } = await api.get(
+        "/admin/seller-applications"
+      );
+
+      return data;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+
+  export const approveSellerApplication =
+    (applicationId, adminNote, toast) => async () => {
+        try {
+            const { data } = await api.put(
+                `/admin/seller-applications/${applicationId}/approve`,
+                null,
+                {
+                    params: {
+                        adminNote: adminNote || undefined,
+                    },
+                }
+            );
+
+            toast.success("Seller application approved");
+            return data;
+        } catch (error) {
+            console.log(error);
+
+            toast.error(
+                error?.response?.data?.message ||
+                "Failed to approve seller application"
+            );
+
+            throw error;
+        }
+    };
+
+
+export const rejectSellerApplication =
+    (applicationId, adminNote, toast) => async () => {
+        try {
+            const { data } = await api.put(
+                `/admin/seller-applications/${applicationId}/reject`,
+                null,
+                {
+                    params: {
+                        adminNote: adminNote || undefined,
+                    },
+                }
+            );
+
+            toast.success("Seller application rejected");
+            return data;
+        } catch (error) {
+            console.log(error);
+
+            toast.error(
+                error?.response?.data?.message ||
+                "Failed to reject seller application"
+            );
+
+            throw error;
+        }
+    };
 
 export const logOutUser = (navigate) => (dispatch) => {
     dispatch({ type:"LOG_OUT" });
@@ -285,38 +415,69 @@ export const getUserCart = () => async (dispatch, getState) => {
 
 
 export const createStripePaymentSecret 
-    = (sendData) => async (dispatch, getState) => {
+    = (sendData, toast) => async (dispatch, getState) => {
         try {
             dispatch({ type: "IS_FETCHING" });
             const { data } = await api.post("/order/stripe-client-secret", sendData);
             dispatch({ type: "CLIENT_SECRET", payload: data });
               localStorage.setItem("client-secret", JSON.stringify(data));
               dispatch({ type: "IS_SUCCESS" });
-        } catch (error) {
-            console.log(error);
-            toast.error(error?.response?.data?.message || "Failed to create client secret");
-        }
+     } catch (error) {
+    console.log(error);
+
+    const message =
+        error?.response?.data?.message ||
+        "Failed to initialize payment. Please try again.";
+
+    dispatch({
+        type: "IS_ERROR",
+        payload: message,
+    });
+
+    if (toast) {
+        toast.error(message);
+    }
+}
 };
 
 
-export const stripePaymentConfirmation 
-    = (sendData, setErrorMesssage, setLoadng, toast) => async (dispatch, getState) => {
+export const stripePaymentConfirmation =
+    (sendData, setErrorMessage, setLoading, toast) =>
+    async (dispatch) => {
         try {
-            const response  = await api.post("/order/users/payments/online", sendData);
+            setLoading(true);
+
+            const response = await api.post(
+                "/order/users/payments/online",
+                sendData
+            );
+
             if (response.data) {
                 localStorage.removeItem("CHECKOUT_ADDRESS");
                 localStorage.removeItem("cartItems");
                 localStorage.removeItem("client-secret");
-                dispatch({ type: "REMOVE_CLIENT_SECRET_ADDRESS"});
-                dispatch({ type: "CLEAR_CART"});
+
+                dispatch({ type: "REMOVE_CLIENT_SECRET_ADDRESS" });
+                dispatch({ type: "CLEAR_CART" });
+
                 toast.success("Order Accepted");
-              } else {
-                setErrorMesssage("Payment Failed. Please try again.");
-              }
+
+                return response.data;
+            } else {
+                setErrorMessage("Payment Failed. Please try again.");
+                return null;
+            }
         } catch (error) {
-            setErrorMesssage("Payment Failed. Please try again.");
+            console.log(error);
+            setErrorMessage(
+                error?.response?.data?.message ||
+                "Payment Failed. Please try again."
+            );
+            return null;
+        } finally {
+            setLoading(false);
         }
-};
+    };
 
 export const analyticsAction = () => async (dispatch, getState) => {
         try {
@@ -359,6 +520,80 @@ export const getOrdersForDashboard = (queryString, isAdmin) => async (dispatch) 
     }
 };
 
+export const getAllReturnRequests = () => async (dispatch) => {
+    try {
+        dispatch({ type: "IS_FETCHING" });
+
+        const { data } = await api.get("/admin/returns");
+
+        dispatch({
+            type: "GET_ADMIN_RETURNS",
+            payload: data,
+        });
+
+        dispatch({ type: "IS_SUCCESS" });
+    } catch (error) {
+        console.log(error);
+
+        dispatch({
+            type: "IS_ERROR",
+            payload:
+                error?.response?.data?.message ||
+                "Failed to fetch return requests",
+        });
+    }
+};
+
+
+export const updateReturnRequestStatus = (
+    returnId,
+    status,
+    toast
+) => async (dispatch) => {
+    try {
+        dispatch({ type: "IS_FETCHING" });
+
+        const { data } = await api.put(
+            `/admin/returns/${returnId}/status`,
+            null,
+            {
+                params: {
+                    status: status,
+                },
+            }
+        );
+
+        dispatch({
+            type: "GET_ADMIN_RETURNS",
+            payload: await api
+                .get("/admin/returns")
+                .then((response) => response.data),
+        });
+
+        dispatch({ type: "IS_SUCCESS" });
+
+        toast.success(
+            `Return request ${status.toLowerCase()} successfully`
+        );
+
+        return data;
+    } catch (error) {
+        console.log(error);
+
+        dispatch({
+            type: "IS_ERROR",
+            payload:
+                error?.response?.data?.message ||
+                "Failed to update return request",
+        });
+
+        toast.error(
+            error?.response?.data?.message ||
+                "Failed to update return request"
+        );
+    }
+};
+
 
 
 export const updateOrderStatusFromDashboard =
@@ -368,7 +603,7 @@ export const updateOrderStatusFromDashboard =
         const endpoint = isAdmin ? "/admin/orders/" : "/seller/orders/";
         const { data } = await api.put(`${endpoint}${orderId}/status`, { status: orderStatus});
         toast.success(data.message || "Order updated successfully");
-        await dispatch(getOrdersForDashboard());
+        await dispatch(getOrdersForDashboard("", isAdmin));
     } catch (error) {
         console.log(error);
         toast.error(error?.response?.data?.message || "Internal Server Error");
@@ -434,10 +669,14 @@ export const addNewProductFromDashboard =
             reset();
             setOpen(false);
             await dispatch(dashboardProductsAction());
-        } catch (error) {
-            console.error(err);
-            toast.error(err?.response?.data?.description || "Product creation failed");
-        } finally {
+       } catch (error) {
+    console.error(error);
+    toast.error(
+        error?.response?.data?.description ||
+        error?.response?.data?.message ||
+        "Product creation failed"
+    );
+} finally {
             setLoader(false);
         }
     }
@@ -605,7 +844,7 @@ export const addNewDashboardSeller =
   (sendData, toast, reset, setOpen, setLoader) => async (dispatch) => {
     try {
       setLoader(true);
-      await api.post("/auth/signup", sendData);
+      await api.post("/admin/sellers", sendData);
       reset();
       toast.success("Seller registered successfully!");
 
@@ -620,5 +859,279 @@ export const addNewDashboardSeller =
     } finally {
       setLoader(false);
       setOpen(false);
+    }
+  };
+
+
+  export const deleteSellerDashboardAction =
+  (setOpen, sellerId, toast) => async (dispatch) => {
+    try {
+      dispatch({ type: "IS_FETCHING" });
+
+      await api.delete(`/auth/sellers/${sellerId}`);
+
+      dispatch({ type: "IS_SUCCESS" });
+
+      toast.success("Seller deleted successfully");
+
+      setOpen(false);
+
+      await dispatch(getAllSellersDashboard());
+    } catch (err) {
+      console.log(err);
+
+      toast.error(
+        err?.response?.data?.message || "Failed to delete seller"
+      );
+
+      dispatch({
+        type: "IS_ERROR",
+        payload: err?.response?.data?.message || "Internal Server Error",
+      });
+    }
+  };
+
+
+
+export const getWishlist = () => async (dispatch) => {
+  try {
+    const { data } = await api.get("/wishlist");
+
+    dispatch({
+      type: "GET_WISHLIST",
+      payload: data,
+    });
+  } catch (error) {
+    console.log("GET WISHLIST ERROR:", error);
+
+    dispatch({
+      type: "GET_WISHLIST_ERROR",
+      payload:
+        error?.response?.data?.message ||
+        "Failed to fetch wishlist",
+    });
+  }
+};
+
+export const addToWishlist =
+  (productId, toast) => async (dispatch) => {
+    try {
+      const { data } = await api.post(
+        `/wishlist/${productId}`
+      );
+
+      dispatch({
+        type: "ADD_TO_WISHLIST",
+        payload: data,
+      });
+
+      if (toast) {
+        toast.success("Added to Wishlist");
+      }
+    } catch (error) {
+      console.log("ADD WISHLIST ERROR:", error);
+
+      if (toast) {
+        toast.error(
+          error?.response?.data?.message ||
+            "Failed to add to wishlist"
+        );
+      }
+    }
+  };
+
+export const removeFromWishlist =
+  (productId, toast) => async (dispatch) => {
+    try {
+      await api.delete(`/wishlist/${productId}`);
+
+      dispatch({
+        type: "REMOVE_FROM_WISHLIST",
+        payload: productId,
+      });
+
+      if (toast) {
+        toast.success("Removed from Wishlist");
+      }
+    } catch (error) {
+      console.log("REMOVE WISHLIST ERROR:", error);
+
+      if (toast) {
+        toast.error(
+          error?.response?.data?.message ||
+            "Failed to remove from wishlist"
+        );
+      }
+    }
+  };
+
+
+  // ==================== REVIEW ACTIONS ====================
+
+export const getProductReviews =
+  (productId) => async (dispatch) => {
+    try {
+      const { data } = await api.get(
+        `/products/${productId}/reviews`
+      );
+
+      dispatch({
+        type: "GET_PRODUCT_REVIEWS",
+        payload: data,
+      });
+    } catch (error) {
+      console.log("GET REVIEWS ERROR:", error);
+
+      dispatch({
+        type: "GET_PRODUCT_REVIEWS_ERROR",
+        payload:
+          error?.response?.data?.message ||
+          "Failed to fetch reviews",
+      });
+    }
+  };
+
+
+export const getProductAverageRating =
+  (productId) => async (dispatch) => {
+    try {
+      const { data } = await api.get(
+        `/products/${productId}/reviews/average`
+      );
+
+      dispatch({
+        type: "GET_PRODUCT_AVERAGE_RATING",
+        payload: data,
+      });
+    } catch (error) {
+      console.log("GET AVERAGE RATING ERROR:", error);
+
+      dispatch({
+        type: "GET_PRODUCT_AVERAGE_RATING_ERROR",
+        payload: 0,
+      });
+    }
+  };
+
+
+export const getProductReviewCount =
+  (productId) => async (dispatch) => {
+    try {
+      const { data } = await api.get(
+        `/products/${productId}/reviews/count`
+      );
+
+      dispatch({
+        type: "GET_PRODUCT_REVIEW_COUNT",
+        payload: data,
+      });
+    } catch (error) {
+      console.log("GET REVIEW COUNT ERROR:", error);
+
+      dispatch({
+        type: "GET_PRODUCT_REVIEW_COUNT_ERROR",
+        payload: 0,
+      });
+    }
+  };
+
+
+export const createProductReview =
+  (productId, reviewData, toast) =>
+  async (dispatch) => {
+    try {
+      const { data } = await api.post(
+        `/products/${productId}/reviews`,
+        reviewData
+      );
+
+      dispatch({
+        type: "CREATE_PRODUCT_REVIEW",
+        payload: data,
+      });
+
+      if (toast) {
+        toast.success("Review submitted successfully");
+      }
+
+      return data;
+    } catch (error) {
+      console.log("CREATE REVIEW ERROR:", error);
+
+      if (toast) {
+        toast.error(
+          error?.response?.data?.message ||
+            "Failed to submit review"
+        );
+      }
+
+      return null;
+    }
+  };
+
+
+export const updateProductReview =
+  (reviewId, reviewData, toast) =>
+  async (dispatch) => {
+    try {
+      const { data } = await api.put(
+        `/reviews/${reviewId}`,
+        reviewData
+      );
+
+      dispatch({
+        type: "UPDATE_PRODUCT_REVIEW",
+        payload: data,
+      });
+
+      if (toast) {
+        toast.success("Review updated successfully");
+      }
+
+      return data;
+    } catch (error) {
+      console.log("UPDATE REVIEW ERROR:", error);
+
+      if (toast) {
+        toast.error(
+          error?.response?.data?.message ||
+            "Failed to update review"
+        );
+      }
+
+      return null;
+    }
+  };
+
+
+export const deleteProductReview =
+  (reviewId, toast) =>
+  async (dispatch) => {
+    try {
+      await api.delete(
+        `/reviews/${reviewId}`
+      );
+
+      dispatch({
+        type: "DELETE_PRODUCT_REVIEW",
+        payload: reviewId,
+      });
+
+      if (toast) {
+        toast.success("Review deleted successfully");
+      }
+
+      return true;
+    } catch (error) {
+      console.log("DELETE REVIEW ERROR:", error);
+
+      if (toast) {
+        toast.error(
+          error?.response?.data?.message ||
+            "Failed to delete review"
+        );
+      }
+
+      return false;
     }
   };

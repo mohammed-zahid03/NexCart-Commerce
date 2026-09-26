@@ -3,14 +3,36 @@ import { Divider } from '@mui/material';
 import { useState } from 'react'
 import Status from './Status';
 import { MdClose, MdDone } from 'react-icons/md';
+import { useDispatch } from "react-redux";
+import { addToCart } from "../../store/actions";
+import toast from "react-hot-toast";
 
 function ProductViewModal({open, setOpen, product, isAvailable}) {
   
   const {id, productName, image, description, quantity, price, discount, specialPrice} = product;
   const [qty, setQty] = useState(1);
+  const dispatch = useDispatch();
   const handleClickOpen = () => {
     setOpen(true);
   }
+
+  const addToCartHandler = () => {
+  dispatch(
+    addToCart(
+      {
+        image,
+        productName,
+        description,
+        specialPrice,
+        price,
+        productId: id,
+        quantity,
+      },
+      qty,
+      toast
+    )
+  );
+};
 
   return (
     <>
@@ -109,11 +131,11 @@ function ProductViewModal({open, setOpen, product, isAvailable}) {
                 </div>
 
              <button
-                className="mt-5 w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
-       >
-                Add To Cart
-              </button>
-
+  onClick={addToCartHandler}
+  className="mt-5 w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
+>
+  Add To Cart
+</button>
              <div className="mt-6 border-t pt-4 text-sm text-gray-600 space-y-2">
                  <p>✓ Secure Payment</p>
                  <p>✓ Fast Delivery</p>

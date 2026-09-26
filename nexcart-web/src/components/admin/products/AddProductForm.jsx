@@ -50,14 +50,15 @@ const dispatch = useDispatch();
 
 
     useEffect(() => {
-        if (update && product) {
-            setValue("productName", product?.productName);
-            setValue("price", product?.price);
-            setValue("quantity", product?.quantity);
-            setValue("discount", product?.discount);
-            setValue("specialPrice", product?.specialPrice);
-            setValue("description", product?.description);
-        }
+       if (update && product) {
+    setValue("productName", product?.productName);
+    setValue("brand", product?.brand);
+    setValue("price", product?.price);
+    setValue("quantity", product?.quantity);
+    setValue("discount", product?.discount);
+    setValue("specialPrice", product?.specialPrice);
+    setValue("description", product?.description);
+}
     }, [update, product]);
 
 
@@ -80,27 +81,38 @@ const dispatch = useDispatch();
     <div className='py-5 relative h-full'>
         <form className='space-y-4'
             onSubmit={handleSubmit(saveProductHandler)}>
-            <div className='flex md:flex-row flex-col gap-4 w-full'>
-                <InputField 
-                    label="Product Name"
-                    required
-                    id="productName"
-                    type="text"
-                    message="This field is required*"
-                    register={register}
-                    placeholder="Product Name"
-                    errors={errors}
-                    />
+           <div className='flex md:flex-row flex-col gap-4 w-full'>
+    <InputField 
+        label="Product Name"
+        required
+        id="productName"
+        type="text"
+        message="This field is required*"
+        register={register}
+        placeholder="Product Name"
+        errors={errors}
+    />
 
-                {!update && (
-                    <SelectTextField
-                        label="Select Categories"
-                        select={selectedCategory}
-                        setSelect={setSelectedCategory}
-                        lists={categories}
-                    />
-                )}
-            </div>
+    <InputField
+        label="Brand"
+        required
+        id="brand"
+        type="text"
+        message="Brand is required*"
+        placeholder="Product Brand"
+        register={register}
+        errors={errors}
+    />
+
+    {!update && (
+        <SelectTextField
+            label="Select Categories"
+            select={selectedCategory}
+            setSelect={setSelectedCategory}
+            lists={categories}
+        />
+    )}
+</div>
 
             <div className='flex md:flex-row flex-col gap-4 w-full'>
                 <InputField 

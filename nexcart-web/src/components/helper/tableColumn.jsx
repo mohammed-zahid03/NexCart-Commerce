@@ -1,11 +1,20 @@
-import { FaEdit, FaEye, FaImage, FaTrashAlt } from "react-icons/fa";
+import {
+  FaEdit,
+  FaEye,
+  FaImage,
+  FaTrashAlt,
+  FaStar,
+} from "react-icons/fa";
 import { MdOutlineEmail } from "react-icons/md";
 
 export const adminProductTableColumn = (
   handleEdit,
   handleDelete,
   handleImageUpload,
-  handleProductView
+  handleProductView,
+  handleFeaturedToggle,
+  handleProductStatus,
+  isAdmin
 ) => [
   {
     disableColumnMenu: true,
@@ -33,6 +42,33 @@ export const adminProductTableColumn = (
     cellClassName: "text-slate-700 font-normal border text-center",
     renderHeader: (params) => <span>Product Name</span>,
   },
+
+  {
+  disableColumnMenu: true,
+  field: "status",
+  headerName: "Status",
+  align: "center",
+  width: 180,
+  editable: false,
+  sortable: false,
+  headerAlign: "center",
+  headerClassName: "text-black font-semibold text-center border",
+  cellClassName: "text-slate-700 font-normal border text-center",
+  renderHeader: () => <span>Status</span>,
+  renderCell: (params) => (
+    <span
+      className={`font-semibold ${
+        params.row.status === "APPROVED"
+          ? "text-green-600"
+          : params.row.status === "REJECTED"
+          ? "text-red-600"
+          : "text-orange-500"
+      }`}
+    >
+      {params.row.status || "PENDING"}
+    </span>
+  ),
+},
 
   {
     disableColumnMenu: true,
@@ -107,11 +143,14 @@ export const adminProductTableColumn = (
     headerClassName: "text-black font-semibold text-center",
     cellClassName: "text-slate-700 font-normal",
     sortable: false,
-    width: 400,
+    width: 700,
     renderHeader: (params) => <span>Action</span>,
     renderCell: (params) => {
       return (
         <div className="flex justify-center items-center space-x-2 h-full pt-2">
+
+         
+
           <button
             onClick={() => handleImageUpload(params.row)}
             className="flex items-center bg-green-500 hover:bg-green-600 text-white px-4 h-9 rounded-md"
@@ -141,6 +180,45 @@ export const adminProductTableColumn = (
             <FaEye className="mr-2" />
             View
           </button>
+
+           <button
+  onClick={() => handleFeaturedToggle(params.row)}
+  className={`flex items-center text-white px-4 h-9 rounded-md ${
+    params.row.featured
+      ? "bg-yellow-500 hover:bg-yellow-600"
+      : "bg-gray-500 hover:bg-gray-600"
+  }`}
+>
+  <FaStar className="mr-2" />
+  {params.row.featured ? "Featured" : "Feature"}
+</button>
+
+
+{isAdmin &&
+  (params.row.status === "PENDING" ||
+    params.row.status === "REJECTED") && (
+    <>
+      <button
+        onClick={() =>
+          handleProductStatus(params.row, "APPROVED")
+        }
+        className="flex items-center bg-green-500 hover:bg-green-600 text-white px-4 h-9 rounded-md"
+      >
+        Approve
+      </button>
+
+      {params.row.status === "PENDING" && (
+        <button
+          onClick={() =>
+            handleProductStatus(params.row, "REJECTED")
+          }
+          className="flex items-center bg-red-500 hover:bg-red-600 text-white px-4 h-9 rounded-md"
+        >
+          Reject
+        </button>
+      )}
+    </>
+  )}
         </div>
       );
     },
@@ -189,6 +267,18 @@ export const adminOrderTableColumn = (handleEdit) => [
     cellClassName: "text-slate-700 font-normal border text-center",
     renderHeader: (params) => <span>Total Amount</span>,
   },
+  {
+    field: "returnStatus",
+    headerName: "Return",
+    align: "center",
+    width: 150,
+    editable: false,
+    sortable: false,
+    headerAlign: "center",
+    headerClassName: "text-black font-semibold text-center border ",
+    cellClassName: "text-slate-700 font-normal border text-center",
+    renderHeader: (params) => <span>Return</span>,
+},
   {
     // Column to display order status (e.g., Pending, Shipped).
     disableColumnMenu: true,
@@ -310,7 +400,7 @@ export const categoryTableColumns = (handleEdit, handleDelete) => [
 
 
 //table column for seller in admin panel
-export const sellerTableColumns = [
+export const sellerTableColumns = (handleDelete, handleSellerStatus) => [
   {
     disableColumnMenu: true,
     field: "id",
@@ -356,6 +446,39 @@ export const sellerTableColumns = [
             <MdOutlineEmail className="text-slate-700 text-lg" />
           </span>
           <span>{params?.row?.email}</span>
+        </div>
+      );
+    },
+  },
+
+    {
+    field: "action",
+    headerName: "Action",
+    headerAlign: "center",
+    editable: false,
+    headerClassName: "text-black font-semibold text-center",
+    cellClassName: "text-slate-700 font-normal",
+    sortable: false,
+    width: 250,
+    renderHeader: (params) => <span>Action</span>,
+    renderCell: (params) => {
+      return (
+        <div className="flex justify-center items-center h-full pt-2">
+        <button
+  onClick={() =>
+    handleSellerStatus(
+      params.row,
+      !params.row.sellerActive
+    )
+  }
+  className={`flex items-center text-white px-4 h-9 rounded-md ${
+    params.row.sellerActive
+      ? "bg-orange-500 hover:bg-orange-600"
+      : "bg-green-500 hover:bg-green-600"
+  }`}
+>
+  {params.row.sellerActive ? "Suspend" : "Activate"}
+</button>
         </div>
       );
     },

@@ -1,10 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap')
-layer(base);
+
 
 @import 'tailwindcss';
 
 @theme {
-  --font-montserrat: Montserrat, sans-serif;
+
 
   --shadow-custom: 0 0 15px rgba(0, 0, 0, 0.3);
   --shadow-right: 10px 0px 10px -5px rgba(0, 0, 0, 0.3);
@@ -49,4 +48,14 @@ layer(base);
   ::file-selector-button {
     border-color: var(--color-gray-200, currentcolor);
   }
+
+  body {
+    font-family: "Inter", sans-serif;
+    background: #f8fafc;
+    color: #0f172a;
+  }
+}
+
+@theme {
+  --font-display: "Cormorant Garamond", serif;
 }

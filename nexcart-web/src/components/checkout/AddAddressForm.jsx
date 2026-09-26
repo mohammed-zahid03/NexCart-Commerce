@@ -55,16 +55,17 @@ const AddAddressForm = ({ address, setOpenAddressModal }) => {
                         
                     </div>
             <div className="flex flex-col gap-4">
-                <InputField
-                    label="Building Name"
-                    required
-                    id="buildingName"
-                    type="text"
-                    message="*Building Name is required"
-                    placeholder="Enter Building Name"
-                    register={register}
-                    errors={errors}
-                    />
+               <InputField
+    label="Building Name"
+    required
+    id="buildingName"
+    type="text"
+    min={5}
+    message="*Building Name must be at least 5 characters"
+    placeholder="Enter Building Name"
+    register={register}
+    errors={errors}
+/>
 
                 <InputField
                     label="City"

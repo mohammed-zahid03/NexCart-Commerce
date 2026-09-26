@@ -1,9 +1,12 @@
 import { Button, FormControl, InputLabel, MenuItem, Select, Tooltip } from "@mui/material";
-import { useEffect, useState } from "react";
 import { FiArrowDown, FiArrowUp, FiRefreshCw, FiSearch } from "react-icons/fi";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-
-const Filter = ({ categories }) => {
+import { useEffect, useState } from "react";
+const Filter = ({
+  categories,
+  searchTerm,
+  setSearchTerm
+}) => {
     const [searchParams] = useSearchParams();
     const params = new URLSearchParams(searchParams);
     const pathname = useLocation().pathname;
@@ -11,7 +14,6 @@ const Filter = ({ categories }) => {
     
     const [category, setCategory] = useState("all");
     const [sortOrder, setSortOrder] = useState("asc");
-    const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
         const currentCategory = searchParams.get("category") || "all";
@@ -23,20 +25,26 @@ const Filter = ({ categories }) => {
         setSearchTerm(currentSearchTerm);
     }, [searchParams]);
 
-    useEffect(() => { 
-        const handler = setTimeout(() => {
-            if (searchTerm) {
-                searchParams.set("keyword", searchTerm);
-            } else {
-                searchParams.delete("keyword");
-            }
-            navigate(`${pathname}?${searchParams.toString()}`);
-        }, 700);
+    useEffect(() => {
+    const handler = setTimeout(() => {
 
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [searchParams, searchTerm, navigate, pathname]);
+        console.log("Typing:", searchTerm);
+
+        const params = new URLSearchParams(searchParams);
+
+        if (searchTerm) {
+            params.set("keyword", searchTerm);
+        } else {
+            params.delete("keyword");
+        }
+
+        navigate(`${pathname}?${params.toString()}`);
+
+    }, 700);
+
+    return () => clearTimeout(handler);
+
+}, [searchTerm]);
 
     const handleCategoryChange = (event) => {
         const selectedCategory = event.target.value;

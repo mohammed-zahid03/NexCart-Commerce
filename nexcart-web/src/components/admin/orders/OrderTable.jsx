@@ -25,6 +25,7 @@ const tableRecords = adminOrder?.map((item) => {
     totalAmount: item.totalAmount,
     status: item.orderStatus,
     date: item.orderDate,
+    returnStatus: item.returnRequest?.status || "—",
   }
 });
 
