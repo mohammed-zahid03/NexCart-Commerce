@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import './App.css'
 import Products from './components/products/Products'
 import {
   BrowserRouter as Router,

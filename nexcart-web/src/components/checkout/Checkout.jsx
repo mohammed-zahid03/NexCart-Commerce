@@ -14,7 +14,6 @@ import AddressInfo from "./AddressInfo";
 import PaymentMethod from "./PaymentMethod";
 import OrderSummary from "./OrderSummary";
 import StripePayment from "./StripePayment";
-import PaypalPayment from "./PaypalPayment";
 import ErrorPage from "../shared/ErrorPage";
 
 import { getUserAddresses } from "../../store/actions";
