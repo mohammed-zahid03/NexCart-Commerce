@@ -13,6 +13,8 @@ import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import com.stripe.model.Refund;
+import com.stripe.param.RefundCreateParams;
 
 @Service
 @Transactional
@@ -63,6 +65,12 @@ public class StripeServiceImpl implements StripeService {
                         .setCurrency(stripePaymentDto.getCurrency())
                         .setCustomer(customer.getId())
                         .setDescription(stripePaymentDto.getDescription())
+                        .putMetadata(
+                                "addressId",
+                                String.valueOf(
+                                        stripePaymentDto.getAddress().getAddressId()
+                                )
+                        )
                         .setAutomaticPaymentMethods(
                                 PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
                                         .setEnabled(true)
@@ -71,5 +79,25 @@ public class StripeServiceImpl implements StripeService {
                         .build();
 
         return PaymentIntent.create(params);
+    }
+
+    @Override
+    public PaymentIntent verifyPayment(String paymentIntentId) throws StripeException {
+
+        if (paymentIntentId == null || paymentIntentId.isBlank()) {
+            throw new IllegalArgumentException("Payment ID is required.");
+        }
+
+        return PaymentIntent.retrieve(paymentIntentId);
+    }
+    @Override
+    public void refundPayment(String paymentIntentId) throws StripeException {
+
+        RefundCreateParams params =
+                RefundCreateParams.builder()
+                        .setPaymentIntent(paymentIntentId)
+                        .build();
+
+        Refund.create(params);
     }
 }

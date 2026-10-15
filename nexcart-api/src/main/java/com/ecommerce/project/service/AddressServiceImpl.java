@@ -9,6 +9,7 @@ import com.ecommerce.project.repositories.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.ecommerce.project.exceptions.AddressAccessDeniedException;
 
 import java.util.List;
 
@@ -35,17 +36,32 @@ public class AddressServiceImpl implements AddressService{
     }
 
     @Override
-    public List<AddressDTO> getAddresses() {
-        List<Address> addresses = addressRepository.findAll();
+    public List<AddressDTO> getAddresses(User user) {
+        List<Address> addresses = user.getAddresses();
+
         return addresses.stream()
                 .map(address -> modelMapper.map(address, AddressDTO.class))
                 .toList();
     }
 
     @Override
-    public AddressDTO getAddressesById(Long addressId) {
+    public AddressDTO getAddressesById(Long addressId, User user) {
+
         Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResourceNotFoundException("Address", "addressId", addressId));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Address",
+                                "addressId",
+                                addressId
+                        )
+                );
+
+        if (!address.getUser().getUserId().equals(user.getUserId())) {
+            throw new AddressAccessDeniedException(
+                    "You are not authorized to access this address."
+            );
+        }
+
         return modelMapper.map(address, AddressDTO.class);
     }
 
@@ -58,9 +74,15 @@ public class AddressServiceImpl implements AddressService{
     }
 
     @Override
-    public AddressDTO updateAddress(Long addressId, AddressDTO addressDTO) {
+    public AddressDTO updateAddress(Long addressId, AddressDTO addressDTO, User user) {
         Address addressFromDatabase = addressRepository.findById(addressId)
                 .orElseThrow(() -> new ResourceNotFoundException("Address", "addressId", addressId));
+
+        if (!addressFromDatabase.getUser().getUserId().equals(user.getUserId())) {
+            throw new AddressAccessDeniedException(
+                    "You are not authorized to update this address."
+            );
+        }
 
         addressFromDatabase.setCity(addressDTO.getCity());
         addressFromDatabase.setPincode(addressDTO.getPincode());
@@ -71,7 +93,7 @@ public class AddressServiceImpl implements AddressService{
 
         Address updatedAddress = addressRepository.save(addressFromDatabase);
 
-        User user = addressFromDatabase.getUser();
+
         user.getAddresses().removeIf(address -> address.getAddressId().equals(addressId));
         user.getAddresses().add(updatedAddress);
         userRepository.save(user);
@@ -80,14 +102,22 @@ public class AddressServiceImpl implements AddressService{
     }
 
     @Override
-    public String deleteAddress(Long addressId) {
+    public String deleteAddress(Long addressId, User user) {
+
         Address addressFromDatabase = addressRepository.findById(addressId)
                 .orElseThrow(() -> new ResourceNotFoundException("Address", "addressId", addressId));
 
-        User user = addressFromDatabase.getUser();
-        user.getAddresses().removeIf(address -> address.getAddressId().equals(addressId));
-        userRepository.save(user);
+        if (!addressFromDatabase.getUser().getUserId().equals(user.getUserId())) {
+            throw new AddressAccessDeniedException(
+                    "You are not authorized to delete this address."
+            );
+        }
 
+        user.getAddresses().removeIf(
+                address -> address.getAddressId().equals(addressId)
+        );
+
+        userRepository.save(user);
         addressRepository.delete(addressFromDatabase);
 
         return "Address deleted successfully with addressId: " + addressId;

@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import jakarta.validation.ConstraintViolationException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,5 +40,27 @@ public class MyGlobalExceptionHandler {
         String message = e.getMessage();
         APIResponse apiResponse = new APIResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<APIResponse> myConstraintViolationException(
+            ConstraintViolationException e
+    ) {
+        String message = e.getConstraintViolations()
+                .stream()
+                .map(violation ->
+                        violation.getPropertyPath()
+                                + ": "
+                                + violation.getMessage()
+                )
+                .findFirst()
+                .orElse("Validation failed");
+
+        APIResponse apiResponse = new APIResponse(message, false);
+
+        return new ResponseEntity<>(
+                apiResponse,
+                HttpStatus.BAD_REQUEST
+        );
     }
 }

@@ -1,4 +1,7 @@
 package com.ecommerce.project.model;
 
-public class SellerApplicationStatus {
+public enum SellerApplicationStatus {
+    PENDING,
+    APPROVED,
+    REJECTED
 }

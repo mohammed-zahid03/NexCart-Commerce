@@ -12,12 +12,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-@Component
+
 public class AuthTokenFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtils jwtUtils;
@@ -28,28 +27,70 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain)
             throws ServletException, IOException {
-        logger.debug("AuthTokenFilter called for URI: {}", request.getRequestURI());
+
+        logger.error("===== AuthTokenFilter START: {} =====", request.getRequestURI());
+
         try {
             String jwt = parseJwt(request);
-            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-                String username = jwtUtils.getUserNameFromJwtToken(jwt);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            logger.error("===== JWT FOUND: {} =====", jwt != null);
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails,
-                                null,
-                                userDetails.getAuthorities());
-                logger.debug("Roles from JWT: {}", userDetails.getAuthorities());
+            if (jwt != null) {
 
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                logger.error("===== VALIDATING JWT =====");
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                if (jwtUtils.validateJwtToken(jwt)) {
+
+                    logger.error("===== JWT VALID =====");
+
+                    String username = jwtUtils.getUserNameFromJwtToken(jwt);
+
+                    logger.error("===== JWT USERNAME: {} =====", username);
+
+                    UserDetails userDetails =
+                            userDetailsService.loadUserByUsername(username);
+
+                    logger.error(
+                            "===== USER AUTHORITIES: {} =====",
+                            userDetails.getAuthorities()
+                    );
+
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+
+                    authentication.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request)
+                    );
+
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(authentication);
+
+                    logger.error(
+                            "===== AFTER AUTH SET: {} =====",
+                            SecurityContextHolder.getContext().getAuthentication()
+                    );
+
+                    logger.error("===== AUTHENTICATION SET =====");
+                }
             }
+
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e);
+            logger.error(
+                    "===== AUTHENTICATION ERROR: {} =====",
+                    e.getMessage(),
+                    e
+            );
         }
 
         filterChain.doFilter(request, response);
@@ -62,14 +103,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 //    }
 
     private String parseJwt(HttpServletRequest request) {
-        String jwtFromCookie = jwtUtils.getJwtFromCookies(request);
-        if (jwtFromCookie != null) {
-            return jwtFromCookie;
-        }
 
         String jwtFromHeader = jwtUtils.getJwtFromHeader(request);
         if (jwtFromHeader != null) {
-            return jwtFromHeader;
+            return jwtFromHeader.trim();
+        }
+
+        String jwtFromCookie = jwtUtils.getJwtFromCookies(request);
+        if (jwtFromCookie != null) {
+            return jwtFromCookie.trim();
         }
 
         return null;

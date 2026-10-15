@@ -1,4 +1,7 @@
 package com.ecommerce.project.model;
 
-public class ProductStatus {
+public enum ProductStatus {
+    PENDING,
+    APPROVED,
+    REJECTED
 }

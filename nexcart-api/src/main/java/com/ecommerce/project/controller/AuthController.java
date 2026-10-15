@@ -70,4 +70,31 @@ public class AuthController {
         return ResponseEntity.ok(authService.getAllSellers(pageDetails));
     }
 
+    @DeleteMapping("/sellers/{sellerId}")
+    public ResponseEntity<MessageResponse> deleteSeller(@PathVariable Long sellerId) {
+        return authService.deleteSeller(sellerId);
+    }
+
+    @PutMapping("/sellers/{sellerId}/status")
+    public ResponseEntity<MessageResponse> updateSellerStatus(
+            @PathVariable Long sellerId,
+            @RequestParam boolean active
+    ) {
+        return authService.updateSellerStatus(sellerId, active);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<MessageResponse> forgotPassword(
+            @RequestParam String email
+    ) {
+        return authService.forgotPassword(email);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<MessageResponse> resetPassword(
+            @RequestParam String token,
+            @RequestParam String newPassword
+    ) {
+        return authService.resetPassword(token, newPassword);
+    }
 }

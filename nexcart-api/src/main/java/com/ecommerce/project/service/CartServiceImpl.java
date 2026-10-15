@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import com.ecommerce.project.model.User;
 
 @Service
 public class CartServiceImpl implements CartService{
@@ -237,6 +238,47 @@ public class CartServiceImpl implements CartService{
         cartItemRepository.deleteCartItemByProductIdAndCartId(cartId, productId);
 
         return "Product " + cartItem.getProduct().getProductName() + " removed from the cart !!!";
+    }
+
+    @Transactional
+    @Override
+    public String deleteProductFromCartForUser(Long cartId, Long productId) {
+
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Cart", "cartId", cartId));
+
+        User loggedInUser = authUtil.loggedInUser();
+
+        if (cart.getUser() == null
+                || !cart.getUser().getUserId().equals(loggedInUser.getUserId())) {
+
+            throw new APIException(
+                    "You are not authorized to modify this cart."
+            );
+        }
+
+        CartItem cartItem =
+                cartItemRepository.findCartItemByProductIdAndCartId(
+                        cartId, productId);
+
+        if (cartItem == null) {
+            throw new ResourceNotFoundException(
+                    "Product", "productId", productId);
+        }
+
+        cart.setTotalPrice(
+                cart.getTotalPrice()
+                        - (cartItem.getProductPrice() * cartItem.getQuantity())
+        );
+
+        cartItemRepository.deleteCartItemByProductIdAndCartId(
+                cartId, productId);
+
+        cartRepository.save(cart);
+
+        return "Product " + cartItem.getProduct().getProductName()
+                + " removed from the cart !!!";
     }
 
 

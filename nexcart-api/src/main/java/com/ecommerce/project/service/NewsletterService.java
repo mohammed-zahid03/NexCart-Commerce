@@ -1,4 +1,6 @@
 package com.ecommerce.project.service;
 
-public class NewsletterService {
+public interface NewsletterService {
+
+    void subscribe(String email);
 }

@@ -9,6 +9,7 @@ import com.ecommerce.project.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -19,7 +20,13 @@ public class UserDTO {
 	private String username;
 	private String email;
 	private String password;
+    private boolean sellerActive;
 	private Set<Role> roles = new HashSet<>();
 	private AddressDTO address;
 	private CartDTO cart;
+
+    private Long ordersCount;
+    private Double totalSpent;
+    private LocalDateTime createdAt;
+    private boolean accountActive;
 }

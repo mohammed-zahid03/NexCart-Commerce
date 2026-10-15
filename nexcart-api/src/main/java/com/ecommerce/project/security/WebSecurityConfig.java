@@ -32,6 +32,8 @@ import com.ecommerce.project.security.jwt.AuthTokenFilter;
 import com.ecommerce.project.security.services.UserDetailsServiceImpl;
 
 import java.util.Set;
+import org.springframework.core.env.Environment;
+
 
 @Configuration
 @EnableWebSecurity
@@ -86,10 +88,13 @@ public class WebSecurityConfig {
                                 .requestMatchers("/api/seller/**").hasAnyRole("ADMIN","SELLER")
                                 //.requestMatchers("/api/admin/**").permitAll()
                                 .requestMatchers("/api/public/**").permitAll()
+                                .requestMatchers("/api/newsletter/**").permitAll()
                                 .requestMatchers("/swagger-ui/**").permitAll()
                                 .requestMatchers("/api/test/**").permitAll()
                                 .requestMatchers("/images/**").permitAll()
+                                .requestMatchers("/videos/**").permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                .requestMatchers("/error").permitAll()
                                 .anyRequest().authenticated()
                 );
 
@@ -113,50 +118,58 @@ public class WebSecurityConfig {
     }
 
 
+
     @Bean
-    public CommandLineRunner initData(RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public CommandLineRunner initData(
+            RoleRepository roleRepository,
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            Environment environment) {
+
         return args -> {
-            // Retrieve or create roles
+            // Always initialize required roles.
             Role userRole = roleRepository.findByRoleName(AppRole.ROLE_USER)
-                    .orElseGet(() -> {
-                        Role newUserRole = new Role(AppRole.ROLE_USER);
-                        return roleRepository.save(newUserRole);
-                    });
+                    .orElseGet(() -> roleRepository.save(
+                            new Role(AppRole.ROLE_USER)));
 
             Role sellerRole = roleRepository.findByRoleName(AppRole.ROLE_SELLER)
-                    .orElseGet(() -> {
-                        Role newSellerRole = new Role(AppRole.ROLE_SELLER);
-                        return roleRepository.save(newSellerRole);
-                    });
+                    .orElseGet(() -> roleRepository.save(
+                            new Role(AppRole.ROLE_SELLER)));
 
             Role adminRole = roleRepository.findByRoleName(AppRole.ROLE_ADMIN)
-                    .orElseGet(() -> {
-                        Role newAdminRole = new Role(AppRole.ROLE_ADMIN);
-                        return roleRepository.save(newAdminRole);
-                    });
+                    .orElseGet(() -> roleRepository.save(
+                            new Role(AppRole.ROLE_ADMIN)));
+
+            // Demo accounts are created only in the local profile.
+            if (!environment.matchesProfiles("local")) {
+                return;
+            }
 
             Set<Role> userRoles = Set.of(userRole);
             Set<Role> sellerRoles = Set.of(sellerRole);
             Set<Role> adminRoles = Set.of(userRole, sellerRole, adminRole);
 
-
-            // Create users if not already present
             if (!userRepository.existsByUserName("user1")) {
-                User user1 = new User("user1", "user1@example.com", passwordEncoder.encode("password1"));
-                userRepository.save(user1);
+                userRepository.save(new User(
+                        "user1",
+                        "user1@example.com",
+                        passwordEncoder.encode("password1")));
             }
 
             if (!userRepository.existsByUserName("seller1")) {
-                User seller1 = new User("seller1", "seller1@example.com", passwordEncoder.encode("password2"));
-                userRepository.save(seller1);
+                userRepository.save(new User(
+                        "seller1",
+                        "seller1@example.com",
+                        passwordEncoder.encode("password2")));
             }
 
             if (!userRepository.existsByUserName("admin")) {
-                User admin = new User("admin", "admin@example.com", passwordEncoder.encode("adminPass"));
-                userRepository.save(admin);
+                userRepository.save(new User(
+                        "admin",
+                        "admin@example.com",
+                        passwordEncoder.encode("adminPass")));
             }
 
-            // Update roles for existing users
             userRepository.findByUserName("user1").ifPresent(user -> {
                 user.setRoles(userRoles);
                 userRepository.save(user);
@@ -173,5 +186,6 @@ public class WebSecurityConfig {
             });
         };
     }
+
 
 }

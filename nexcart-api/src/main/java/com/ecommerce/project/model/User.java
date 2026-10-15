@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -41,6 +42,21 @@ public class User {
     @Size(max = 120)
     @Column(name = "password")
     private String password;
+
+    @Column(nullable = false)
+    private boolean sellerActive = true;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "account_active", nullable = false)
+    private boolean accountActive = true;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
 
     public User(String userName, String email, String password) {
         this.userName = userName;

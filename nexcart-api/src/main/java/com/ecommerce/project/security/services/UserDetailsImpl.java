@@ -30,13 +30,22 @@ public class UserDetailsImpl implements UserDetails {
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(Long id, String username, String email, String password,
-                           Collection<? extends GrantedAuthority> authorities) {
+    private boolean accountActive;
+
+    public UserDetailsImpl(
+            Long id,
+            String username,
+            String email,
+            String password,
+            Collection<? extends GrantedAuthority> authorities,
+            boolean accountActive
+    ) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
         this.authorities = authorities;
+        this.accountActive = accountActive;
     }
 
     public static UserDetailsImpl build(User user) {
@@ -49,7 +58,9 @@ public class UserDetailsImpl implements UserDetails {
                 user.getUserName(),
                 user.getEmail(),
                 user.getPassword(),
-                authorities);
+                authorities,
+                user.isAccountActive()
+        );
     }
 
     @Override
@@ -92,17 +103,19 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return accountActive;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
+
         if (o == null || getClass() != o.getClass())
             return false;
+
         UserDetailsImpl user = (UserDetailsImpl) o;
+
         return Objects.equals(id, user.id);
     }
-
 }
