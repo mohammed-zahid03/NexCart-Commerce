@@ -5,7 +5,7 @@ import FeaturedProducts from "./FeaturedProducts";
 import MainPromoBanner from "./MainPromoBanner";
 import TrendingNow from "./TrendingNow";
 import TrustedBrands from "./TrustedBrands";
-import Testimonials from "../testimonials";
+import Testimonials from "../Testimonials";
 import Footer from "./Footer";
 
 
