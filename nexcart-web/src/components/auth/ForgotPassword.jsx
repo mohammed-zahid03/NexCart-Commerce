@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import api from "../../api/api";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -17,20 +18,13 @@ const ForgotPassword = () => {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        `http://localhost:8080/api/auth/forgot-password?email=${encodeURIComponent(
-          email.trim()
-        )}`,
-        {
-          method: "POST",
-        }
-      );
+     
+const response = await api.post(
+  `/auth/forgot-password?email=${encodeURIComponent(email.trim())}`
+);
 
-      const data = await response.json();
+const data = response.data;
 
-      if (!response.ok) {
-        throw new Error(data.message || "Something went wrong.");
-      }
 
       toast.success(
         data.message || "If an account exists, a reset link has been sent."

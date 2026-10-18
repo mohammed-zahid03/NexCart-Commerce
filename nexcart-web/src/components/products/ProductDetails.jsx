@@ -1182,7 +1182,7 @@ const handleBuyNow = () => {
   if (video) {
     setActiveVideo({
       title: `${product.productName} — 360° View`,
-      src: `http://localhost:8080/videos/${video}`,
+     src: `${import.meta.env.VITE_BACK_END_URL}/videos/${video}`,
     });
   }
 }}
@@ -1218,7 +1218,7 @@ const handleBuyNow = () => {
   if (video) {
     setActiveVideo({
       title: `${product.productName} — Product Video`,
-      src: `http://localhost:8080/videos/${video}`,
+     src: `${import.meta.env.VITE_BACK_END_URL}/videos/${video}`,
     });
   }
 }}

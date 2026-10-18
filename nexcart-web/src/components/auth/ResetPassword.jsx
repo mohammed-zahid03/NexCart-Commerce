@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import api from "../../api/api";
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -33,20 +34,13 @@ const ResetPassword = () => {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        `http://localhost:8080/api/auth/reset-password?token=${encodeURIComponent(
-          token
-        )}&newPassword=${encodeURIComponent(newPassword)}`,
-        {
-          method: "POST",
-        }
-      );
+     
+const response = await api.post(
+  `/auth/reset-password?token=${encodeURIComponent(token)}&newPassword=${encodeURIComponent(newPassword)}`
+);
 
-      const data = await response.json();
+const data = response.data;
 
-      if (!response.ok) {
-        throw new Error(data.message || "Unable to reset password.");
-      }
 
       toast.success(
         data.message || "Password reset successfully."
