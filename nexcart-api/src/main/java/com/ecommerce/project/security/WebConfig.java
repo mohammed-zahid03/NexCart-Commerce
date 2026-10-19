@@ -9,13 +9,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     @Value("${frontend.url}")
-    String frontEndUrl;
+    private String frontEndUrl;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000", frontEndUrl)
-                .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
+                .allowedOrigins(
+                        "http://localhost:3000",
+                        "http://localhost:5173",
+                        frontEndUrl,
+                        "https://nex-cart-commerce-bgjk9sp1x-nex-cart3.vercel.app",
+                        "https://nex-cart-commerce-bquo90et4-nex-cart3.vercel.app"
+                )
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
