@@ -9,7 +9,7 @@ WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
 COPY --from=build /app/images ./images
-COPY --from=build /app/videos ./videos
+
 
 EXPOSE 8080
 
