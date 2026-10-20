@@ -1229,11 +1229,23 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<ProductDTO> getTrendingProducts() {
 
-        LocalDate sinceDate =
-                LocalDate.now().minusDays(30);
+        LocalDate sinceDate = LocalDate.now().minusDays(30);
 
-        return orderItemRepository.findTrendingProducts(sinceDate)
-                .stream()
+        List<Product> products =
+                orderItemRepository.findTrendingProducts(sinceDate);
+
+        // If there are no recent orders, show approved products instead.
+        if (products.isEmpty()) {
+            products = productRepository.findAll()
+                    .stream()
+                    .filter(product ->
+                            product.getStatus() != null
+                                    && product.getStatus().name().equals("APPROVED"))
+                    .limit(5)
+                    .toList();
+        }
+
+        return products.stream()
                 .map(product -> modelMapper.map(product, ProductDTO.class))
                 .toList();
     }
