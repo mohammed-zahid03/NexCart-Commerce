@@ -10,6 +10,7 @@ import {
   Star,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { getImageUrl } from "../../../utils/imageUrl";
 
 import {
   addToCart,
@@ -264,7 +265,7 @@ const isWishlisted = wishlistItems.some(
   "
 >
   <img
-    src={image}
+    src={getImageUrl(image)}
     alt={productName}
     loading="lazy"
     className="
