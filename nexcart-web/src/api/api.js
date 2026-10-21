@@ -1,33 +1,33 @@
-
-import axios from "axios";
-
-const api = axios.create({
-  baseURL: `${import.meta.env.VITE_BACK_END_URL}/api`,
-  withCredentials: true,
-});
-
 api.interceptors.request.use(
   (config) => {
     try {
-      const auth = JSON.parse(localStorage.getItem("auth") || "null");
-      const rawToken = auth?.jwtToken;
+      const savedAuth = localStorage.getItem("auth");
+      const auth = savedAuth ? JSON.parse(savedAuth) : null;
 
-      if (typeof rawToken === "string") {
-        // Remove a possible "Bearer " prefix and surrounding whitespace.
-        const token = rawToken
-          .trim()
-          .replace(/^Bearer\s+/i, "");
+      let token = auth?.jwtToken;
 
-        // Send only a standard JWT, not a prefixed or malformed value.
-        if (token && !/\s/.test(token) && token.split(".").length === 3) {
-          config.headers.Authorization = `Bearer ${token}`;
-        } else {
-          delete config.headers.Authorization;
-        }
+      if (typeof token === "string") {
+        token = token.trim();
+
+        // Remove an existing Bearer prefix.
+        token = token.replace(/^Bearer\s+/i, "");
+
+        // Remove a cookie-name prefix if present.
+        token = token.replace(/^springBootEcom=/i, "");
+
+        // JWTs must not contain whitespace.
+        token = token.replace(/\s+/g, "");
+      }
+
+      if (token && token.split(".").length === 3) {
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${token}`;
+      } else {
+        delete config.headers?.Authorization;
       }
     } catch (error) {
       console.error("Could not read saved authentication data.");
-      delete config.headers.Authorization;
+      delete config.headers?.Authorization;
     }
 
     return config;
