@@ -16,6 +16,10 @@ api.interceptors.request.use(
 
       if (typeof token === "string") {
         token = token.trim();
+
+        // If the saved value contains a cookie string, keep only its value.
+token = token.split(";")[0].trim();
+
         token = token.replace(/^Bearer\s+/i, "");
         token = token.replace(/^springBootEcom=/i, "");
         token = token.replace(/\s+/g, "");
