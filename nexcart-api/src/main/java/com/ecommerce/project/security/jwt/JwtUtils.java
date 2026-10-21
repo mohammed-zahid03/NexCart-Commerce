@@ -18,6 +18,8 @@ import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
 import jakarta.annotation.PostConstruct;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 
 @Component
 public class JwtUtils {
@@ -97,6 +99,13 @@ public class JwtUtils {
                     decoded.length
             );
             key();
+
+            byte[] fingerprint = MessageDigest.getInstance("SHA-256")
+                    .digest(Decoders.BASE64.decode(jwtSecret));
+
+            logger.info("JWT key fingerprint: {}",
+                    HexFormat.of().formatHex(fingerprint));
+
         } catch (Exception e) {
             logger.error("JWT configuration is invalid: {}", e.getMessage());
         }
