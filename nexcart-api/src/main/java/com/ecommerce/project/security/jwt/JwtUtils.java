@@ -17,6 +17,7 @@ import org.springframework.web.util.WebUtils;
 import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class JwtUtils {
@@ -85,6 +86,20 @@ public class JwtUtils {
 
     private Key key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+    }
+
+    @PostConstruct
+    public void checkJwtConfiguration() {
+        try {
+            byte[] decoded = Decoders.BASE64.decode(jwtSecret);
+            logger.info(
+                    "JWT configuration loaded: decoded key length = {} bytes",
+                    decoded.length
+            );
+            key();
+        } catch (Exception e) {
+            logger.error("JWT configuration is invalid: {}", e.getMessage());
+        }
     }
 
     public boolean validateJwtToken(String authToken) {
