@@ -1,3 +1,11 @@
+
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: `${import.meta.env.VITE_BACK_END_URL}/api`,
+  withCredentials: true,
+});
+
 api.interceptors.request.use(
   (config) => {
     try {
@@ -8,14 +16,8 @@ api.interceptors.request.use(
 
       if (typeof token === "string") {
         token = token.trim();
-
-        // Remove an existing Bearer prefix.
         token = token.replace(/^Bearer\s+/i, "");
-
-        // Remove a cookie-name prefix if present.
         token = token.replace(/^springBootEcom=/i, "");
-
-        // JWTs must not contain whitespace.
         token = token.replace(/\s+/g, "");
       }
 
