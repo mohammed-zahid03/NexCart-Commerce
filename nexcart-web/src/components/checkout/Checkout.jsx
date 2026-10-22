@@ -393,7 +393,9 @@ const CheckoutSummary = ({ cart = [], totalPrice = 0 }) => {
                         <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[#f1efea]">
 
                             <img
-                                src={`${import.meta.env.VITE_BACK_END_URL}/images/${item?.image}`}
+                               
+src={`${import.meta.env.VITE_BACK_END_URL}/images/${item?.image?.replace(/^\/+/, "")}`}
+
                                 alt={item?.productName || "Product"}
                                 className="h-full w-full object-contain p-2"
                             />
