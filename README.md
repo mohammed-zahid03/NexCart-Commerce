@@ -1,80 +1,64 @@
-This is the Official repository of **Java Spring Boot: Professional eCommerce Project Masterclass** on Udemy
+# NexCart
 
-# The Ultimate Java and Spring Boot Mastery Roadmap
+**A full-stack e-commerce application built with React and Spring Boot.**
 
-Welcome to your one-stop-shop for mastering Java and Spring Boot! This repository offers a comprehensive learning experience with high-quality resources and community support. Dive into over 150+ hours of premium content, with everything you need to excel at Java and Spring Boot development.
+[**Visit the live website →**](https://www.nexcart.cyou)
 
-## 🎓 Learning Roadmap
+NexCart brings customer shopping, seller workflows, and administration into one web application, with product discovery, cart and wishlist features, checkout, and order management.
 
-Most of the courses below are available in **Udemy For Business**, so if you have subscription - you can get FREE access.
-Here’s a structured path to enhance your skills with detailed courses available:
+## Features
 
-1. **[Spring Boot By Building Complex Projects Step by Step](https://link.embarkx.com/spring-boot) (90+ Hours of Content)**
-2. **[Master Spring Boot Microservices by Building eCommerce Project](https://link.embarkx.com/microservices) (55+ Hours of Content)**
-3. **[Full Stack AI DevOps for Software Developers (AWS, Azure, GCP)](https://link.embarkx.com/devops) (20+ Hours of Content)**
-4. **[Learn Java with 60+ Hours of Content](http://link.embarkx.com/java) (60+ Hours of Content)**
-5. **[Master Spring Security with React JS + OAuth2](https://link.embarkx.com/spring-security) (34+ Hours of Content)**
-6. **[Master IntelliJ IDEA](http://link.embarkx.com/intellij) (3+ Hours of Content)**
+- Browse products, categories, search results, and product details
+- Add products to a cart or wishlist
+- Register, log in, reset passwords, and manage profile details and delivery addresses
+- Complete checkout with Stripe and view order history
+- Submit seller applications and access seller functionality
+- Use admin tools for product, category, customer, seller, and order management
 
+## Tech Stack
 
-## 🌟 With All Our Courses You Gain Access To
+- **Frontend:** React, Vite, JavaScript, Redux, React Router, Tailwind CSS
+- **Backend:** Java, Spring Boot, Spring Security, JWT, Spring Data JPA / Hibernate
+- **Database:** PostgreSQL
+- **Payments:** Stripe
+- **Deployment:** Vercel, Render, Neon
 
-- 📝 **Notes:** Detailed and downloadable notes to accompany each lesson.
-- 💻 **Source Code:** Full access to the source code used in the tutorials.
-- 🤔 **Doubt Solving:** Responsive instructor and community support.
-- 🎥 **High-Quality HD Videos:** Easy to understand, high-definition video tutorials.
-- 🔄 **Free Lifetime Updates:** Continuous updates to course content at no extra cost.
+## Architecture
 
-## 📚 Why Choose This Mastery Series?
+```text
+React frontend
+     ↓ REST API
+Spring Boot backend
+     ↓ JPA / Hibernate
+PostgreSQL database
+```
 
-With this series, you're not just learning; you're preparing to dominate the field of Java and Spring Boot development. Our structured learning path ensures that you build your skills progressively, with each course designed to build on the knowledge gained from the previous one.
+## Run Locally
 
-### Join Us Now!
+### Frontend
 
-Start your journey today to become a master at Java and Spring Boot. Our community and expert instructors are here to support your learning every step of the way. **Enroll and start building your future, today!**
+```bash
+cd nexcart-web
+npm install
+npm run dev
+```
 
+### Backend
 
+Open `nexcart-api` in IntelliJ IDEA and run the Spring Boot application. Configure the required database and application settings for your local environment before starting it.
 
+## Project Structure
 
+```text
+NexCart-Commerce/
+├── nexcart-web/   # React frontend
+└── nexcart-api/   # Spring Boot REST API
+```
 
-# Usage Policy for Course Materials
+## Security
 
-## Instructor Information
+Keep passwords, database credentials, API secret keys, and environment files out of source control. Use your own local development configuration when running the application.
 
-**Instructor:** Faisal Memon  
-**Company:** [EmbarkX.com](http://www.embarkx.com)
+---
 
-## Policy Overview
-
-This document outlines the guidelines and restrictions concerning the use of course materials provided by EmbarkX, including but not limited to PDF presentations, code samples, and video tutorials.
-
-### 1. Personal Use Only
-
-The materials provided in this course are intended for **your personal use only**. They are to be used solely for the purpose of learning and completing this course.
-
-### 2. No Unauthorized Sharing or Distribution
-
-You are **not permitted** to share, distribute, or publicly post any course materials on any websites, social media platforms, or other public forums without prior written consent from the instructor.
-
-### 3. Intellectual Property
-
-All course materials are protected by copyright laws and are the intellectual property of Faisal Memon and EmbarkX. Unauthorized use, reproduction, or distribution of these materials is **strictly prohibited**.
-
-### 4. Reporting Violations
-
-If you become aware of any unauthorized sharing or distribution of course materials, please report it immediately to [embarkxofficial@gmail.com](mailto:embarkxofficial@gmail.com).
-
-### 5. Legal Action
-
-We reserve the right to take legal action against individuals or entities found to be violating this usage policy.
-
-## Thank You
-
-Thank you for respecting these guidelines and helping us maintain the integrity of our course materials.
-
-## Contact Information
-
-- **Email:** [embarkxofficial@gmail.com](mailto:embarkxofficial@gmail.com)
-- **Website:** [www.embarkx.com](http://www.embarkx.com)
-
-
+Built as a full-stack portfolio project to demonstrate frontend development, REST API design, authentication, database integration, and e-commerce workflows.
